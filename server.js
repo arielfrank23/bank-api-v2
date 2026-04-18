@@ -192,15 +192,102 @@ const swaggerDocs = {
 
     // --- ADMINISTRATION ---
     '/api/admin/users': {
-      get: { tags: ['Administration'], summary: 'Liste de tous les utilisateurs', responses: { 200: { description: 'OK' } } }
+      get: { 
+        tags: ['Administration'], 
+        summary: 'Liste de tous les utilisateurs',
+        responses: { 200: { description: 'Liste récupérée' } } 
+      }
     },
-    '/api/admin/user/{userId}': { 
+    '/api/admin/user/{userId}': {
       delete: { 
         tags: ['Administration'], 
         summary: 'Supprimer un utilisateur',
-        parameters: [{ in: 'path', name: 'userId', required: true, schema: { type: 'integer' } }],
-        responses: { 200: { description: 'OK' } } 
-      } 
+        parameters: [{ in: 'path', name: 'userId', required: true, schema: { type: 'integer' }, example: 1 }],
+        responses: { 200: { description: 'Utilisateur supprimé' } } 
+      }
+    },
+    '/api/admin/transactions': {
+      get: { 
+        tags: ['Administration'], 
+        summary: 'Voir toutes les transactions du système',
+        responses: { 200: { description: 'Historique global récupéré' } } 
+      }
+    },
+    '/api/admin/reports/global': {
+      get: { 
+        tags: ['Administration'], 
+        summary: 'Générer des rapports financiers globaux',
+        responses: { 200: { description: 'Rapport généré' } } 
+      }
+    },
+    '/api/admin/create-admin': {
+      post: { 
+        tags: ['Administration'], 
+        summary: 'Créer d\'autres comptes administrateurs',
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: {
+            type: 'object',
+            properties: {
+              nom: { type: 'string', example: 'Admin Ariel' },
+              email: { type: 'string', example: 'admin@bank.com' },
+              mot_de_passe: { type: 'string', example: 'adminPass123' }
+            }
+          }}}
+        },
+        responses: { 201: { description: 'Admin créé' } } 
+      }
+    },
+    '/api/admin/settings': {
+      put: { 
+        tags: ['Administration'], 
+        summary: 'Définir plafonds et frais bancaires',
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: {
+            type: 'object',
+            properties: {
+              plafond_virement: { type: 'number', example: 1000000 },
+              frais_retrait_pourcentage: { type: 'number', example: 1.5 }
+            }
+          }}}
+        },
+        responses: { 200: { description: 'Paramètres mis à jour' } } 
+      }
+    },
+    '/api/admin/compte/statut': {
+      put: { 
+        tags: ['Administration'], 
+        summary: 'Valider/Bloquer un compte',
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: {
+            type: 'object',
+            properties: {
+              userId: { type: 'integer', example: 1 },
+              statut: { type: 'string', enum: ['ACTIF', 'BLOQUE', 'EN_ATTENTE'], example: 'BLOQUE' }
+            }
+          }}}
+        },
+        responses: { 200: { description: 'Statut mis à jour' } } 
+      }
+    },
+    '/api/admin/compte/ajuster-balance': {
+      put: { 
+        tags: ['Administration'], 
+        summary: 'Modifier le solde (Correction)',
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: {
+            type: 'object',
+            properties: {
+              userId: { type: 'integer', example: 1 },
+              nouveauSolde: { type: 'number', example: 50000 }
+            }
+          }}}
+        },
+        responses: { 200: { description: 'Solde ajusté' } } 
+      }
     },
     '/api/admin/transactions': {
       get: { tags: ['Administration'], summary: 'Voir toutes les transactions du système', responses: { 200: { description: 'OK' } } }
