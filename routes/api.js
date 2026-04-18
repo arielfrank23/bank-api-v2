@@ -2,21 +2,30 @@ const express = require('express');
 const router = express.Router();
 const authCtrl = require('../controllers/authController');
 const transacCtrl = require('../controllers/transactionController');
+const adminCtrl = require('../controllers/adminController');
 
-// Authentification
+// --- AUTHENTIFICATION ---
 router.post('/auth/register', authCtrl.register);
 router.post('/auth/login', authCtrl.login);
-router.put('/user/update', authCtrl.updateProfile); // Ajouté
+router.put('/user/update', authCtrl.updateProfile);
 
-// Transactions
+// --- UTILISATEUR (CLIENT) ---
 router.get('/account/balance/:userId', transacCtrl.getBalance);
 router.get('/transactions/history/:userId', transacCtrl.getHistory);
 router.post('/transactions/transfer', transacCtrl.transfer);
-router.post('/transactions/deposit', transacCtrl.deposit); // Ajouté
-router.post('/transactions/withdraw', transacCtrl.withdraw); // Ajouté
+router.post('/transactions/deposit', transacCtrl.deposit);
+router.post('/transactions/withdraw', transacCtrl.withdraw);
+router.get('/account/rib/:userId', transacCtrl.getRIB);
+router.delete('/account/close', transacCtrl.closeAccount);
 
-// Gestion Compte
-router.get('/account/rib/:userId', transacCtrl.getRIB); // Ajouté
-router.delete('/account/close', transacCtrl.closeAccount); // Ajouté
+// --- ADMINISTRATION ---
+router.get('/admin/users', adminCtrl.getAllUsers);
+router.get('/admin/transactions', adminCtrl.getAllTransactions);
+router.put('/admin/account/status', adminCtrl.updateAccountStatus);
+router.put('/admin/account/adjust-balance', adminCtrl.adjustBalance);
+router.delete('/admin/user/:userId', adminCtrl.deleteUser);
+router.get('/admin/reports/global', adminCtrl.getGlobalReport);
+router.post('/admin/create-admin', adminCtrl.createAdmin);
+router.put('/admin/settings', adminCtrl.updateSystemSettings);
 
 module.exports = router;
