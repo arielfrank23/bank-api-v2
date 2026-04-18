@@ -7,7 +7,6 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 
-// Configuration manuelle de Swagger (Zéro crash)
 const swaggerDocs = {
   openapi: '3.0.0',
   info: {
@@ -44,6 +43,26 @@ const swaggerDocs = {
     },
     '/api/transactions/transfer': {
       post: { tags: ['Utilisateur (Client)'], summary: 'Effectuer un virement', responses: { 200: { description: 'OK' } } }
+    },
+    '/api/transactions/deposit': {
+      post: { tags: ['Utilisateur (Client)'], summary: 'Déposer de l\'argent', responses: { 200: { description: 'OK' } } }
+    },
+    '/api/transactions/withdraw': {
+      post: { tags: ['Utilisateur (Client)'], summary: 'Retirer de l\'argent', responses: { 200: { description: 'OK' } } }
+    },
+    '/api/user/update': {
+      put: { tags: ['Utilisateur (Client)'], summary: 'Modifier mes informations', responses: { 200: { description: 'OK' } } }
+    },
+    '/api/account/rib/{userId}': {
+      get: { 
+        tags: ['Utilisateur (Client)'], 
+        summary: 'Télécharger RIB (PDF)', 
+        parameters: [{ in: 'path', name: 'userId', required: true, schema: { type: 'integer' } }],
+        responses: { 200: { description: 'Fichier PDF envoyé' } } 
+      }
+    },
+    '/api/account/close': {
+      delete: { tags: ['Utilisateur (Client)'], summary: 'Clôturer le compte', responses: { 200: { description: 'Compte supprimé' } } }
     }
   }
 };
@@ -53,33 +72,17 @@ app.use('/api', apiRoutes);
 
 const PORT = process.env.PORT || 3000;
 
-// Fonction de démarrage corrigée
 async function startServer() {
     try {
-        console.log('⏳ Synchronisation avec la base de données...');
         await sequelize.authenticate();
         console.log('✅ Connecté à PostgreSQL sur Neon');
-        
-        const server = app.listen(PORT, '0.0.0.0', () => {
+        app.listen(PORT, '0.0.0.0', () => {
             console.log(`🚀 Serveur actif sur http://localhost:${PORT}/api-docs`);
-        }).on('error', (err) => {
-            if (err.code === 'EADDRINUSE') {
-                console.error(`❌ Le port ${PORT} est déjà utilisé. Tapez: fuser -k ${PORT}/tcp`);
-                process.exit(1);
-            } else {
-                console.error('❌ Erreur serveur:', err);
-            }
         });
-
-        server.keepAliveTimeout = 60000; 
     } catch (err) {
-        console.error('❌ Erreur fatale au démarrage:', err.message);
+        console.error('❌ Erreur:', err.message);
         process.exit(1);
     }
 }
 
-// On lance le serveur
 startServer();
-
-// Garde le processus Node ouvert quoi qu'il arrive
-setInterval(() => {}, 1000 * 60 * 60);
