@@ -65,41 +65,62 @@ const swaggerDocs = {
     },
     responses: { 200: { description: 'Connecté' } }
   }
-},
+    },
 
-    // --- UTILISATEUR (CLIENT) ---
-    '/api/account/balance/{userId}': {
-      get: { 
-        tags: ['Utilisateur (Client)'], 
-        summary: 'Consulter son solde',
-        parameters: [{ in: 'path', name: 'userId', required: true, schema: { type: 'integer' }, example: 1 }],
-        responses: { 200: { description: 'OK' } } 
-      }
-    },
-    '/api/transactions/history/{userId}': {
-      get: { 
-        tags: ['Utilisateur (Client)'], 
-        summary: 'Historique des transactions',
-        parameters: [{ in: 'path', name: 'userId', required: true, schema: { type: 'integer' }, example: 1 }],
-        responses: { 200: { description: 'OK' } } 
-      }
-    },
-    '/api/transactions/transfer': {
+        // --- UTILISATEUR (CLIENT) ---
+        '/api/account/balance/{userId}': {
+          get: { 
+            tags: ['Utilisateur (Client)'], 
+            summary: 'Consulter son solde',
+            parameters: [{ in: 'path', name: 'userId', required: true, schema: { type: 'integer' }, example: 1 }],
+            responses: { 200: { description: 'OK' } } 
+          }
+        },
+        '/api/transactions/history/{userId}': {
+          get: { 
+            tags: ['Utilisateur (Client)'], 
+            summary: 'Historique des transactions',
+            parameters: [{ in: 'path', name: 'userId', required: true, schema: { type: 'integer' }, example: 1 }],
+            responses: { 200: { description: 'OK' } } 
+          }
+        },
+        '/api/transactions/transfer': {
       post: { 
-        tags: ['Utilisateur (Client)'], 
-        summary: 'Effectuer un virement',
+        tags: ['Transactions'], 
+        summary: 'Effectuer un virement entre deux comptes',
         requestBody: {
           required: true,
-          content: { 'application/json': { schema: {
-            type: 'object',
-            properties: {
-              expediteurId: { type: 'integer', example: 1 },
-              destinataireTel: { type: 'string', example: '677000000' },
-              montant: { type: 'number', example: 1000 }
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['expediteurId', 'destinataireTel', 'montant'], // Obligatoire pour voir les astérisques rouges
+                properties: {
+                  expediteurId: { 
+                    type: 'integer', 
+                    description: 'ID de l\'utilisateur qui envoie',
+                    example: 11 
+                  },
+                  destinataireTel: { 
+                    type: 'string', 
+                    description: 'Téléphone du destinataire',
+                    example: '670000002' 
+                  },
+                  montant: { 
+                    type: 'number', 
+                    description: 'Somme à envoyer en FCFA',
+                    example: 5000 
+                  }
+                }
+              }
             }
-          }}}
+          }
         },
-        responses: { 200: { description: 'Virement effectué' } } 
+        responses: {
+          200: { description: 'Virement réussi' },
+          400: { description: 'Solde insuffisant ou données invalides' },
+          500: { description: 'Erreur serveur' }
+        }
       }
     },
     '/api/transactions/deposit': {
