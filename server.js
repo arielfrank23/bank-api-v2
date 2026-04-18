@@ -11,7 +11,7 @@ app.use(express.json());
 const swaggerDocs = {
   openapi: '3.0.0',
   info: {
-    title: 'Bank API V2 - Ariel',
+    title: 'SYSTEME DE GESTION BANCAIRE - API Documentation',
     version: '1.0.0',
     description: 'API Bancaire - Université de Yaoundé I'
   },
