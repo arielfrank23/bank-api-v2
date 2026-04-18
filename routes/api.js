@@ -14,7 +14,7 @@ router.get('/account/balance/:userId', transacCtrl.getBalance);
 router.get('/transactions/history/:userId', transacCtrl.getHistory);
 router.post('/transactions/transfer', transacCtrl.transfer);
 router.post('/transactions/deposit', transacCtrl.deposit);
-router.post('/transactions/withdraw', transacCtrl.withdraw);
+router.post('/transactions/withdraw', transacCtrl.withdraw);    
 router.get('/account/rib/:userId', transacCtrl.getRIB);
 router.delete('/account/close', transacCtrl.closeAccount);
 

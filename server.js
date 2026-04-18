@@ -22,23 +22,143 @@ const swaggerDocs = {
   ],
   paths: {
     // --- AUTHENTIFICATION ---
-    '/api/auth/register': {
-      post: { tags: ['Authentification'], summary: 'Inscription', responses: { 200: { description: 'OK' } } }
+'/api/auth/register': {
+  post: {
+    tags: ['Authentification'],
+    summary: 'Inscription',
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              nom: { type: 'string', example: 'Ariel' },
+              email: { type: 'string', example: 'ariel@example.com' },
+              telephone: { type: 'string', example: '677000000' },
+              mot_de_passe: { type: 'string', example: 'password123' }
+            }
+          }
+        }
+      }
     },
-    '/api/auth/login': {
-      post: { tags: ['Authentification'], summary: 'Connexion', responses: { 200: { description: 'OK' } } }
+    responses: { 201: { description: 'Utilisateur créé' } }
+  }
+},
+'/api/auth/login': {
+  post: {
+    tags: ['Authentification'],
+    summary: 'Connexion',
+    requestBody: {
+      required: true,
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              email: { type: 'string', example: 'ariel@example.com' },
+              mot_de_passe: { type: 'string', example: 'password123' }
+            }
+          }
+        }
+      }
     },
-    '/api/user/update': {
-      put: { tags: ['Utilisateur (Client)'], summary: 'Modifier mes informations', responses: { 200: { description: 'OK' } } }
-    },
+    responses: { 200: { description: 'Connecté' } }
+  }
+},
 
     // --- UTILISATEUR (CLIENT) ---
     '/api/account/balance/{userId}': {
       get: { 
         tags: ['Utilisateur (Client)'], 
         summary: 'Consulter son solde',
-        parameters: [{ in: 'path', name: 'userId', required: true, schema: { type: 'integer' } }],
+        parameters: [{ in: 'path', name: 'userId', required: true, schema: { type: 'integer' }, example: 1 }],
         responses: { 200: { description: 'OK' } } 
+      }
+    },
+    '/api/transactions/history/{userId}': {
+      get: { 
+        tags: ['Utilisateur (Client)'], 
+        summary: 'Historique des transactions',
+        parameters: [{ in: 'path', name: 'userId', required: true, schema: { type: 'integer' }, example: 1 }],
+        responses: { 200: { description: 'OK' } } 
+      }
+    },
+    '/api/transactions/transfer': {
+      post: { 
+        tags: ['Utilisateur (Client)'], 
+        summary: 'Effectuer un virement',
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: {
+            type: 'object',
+            properties: {
+              expediteurId: { type: 'integer', example: 1 },
+              destinataireTel: { type: 'string', example: '677000000' },
+              montant: { type: 'number', example: 1000 }
+            }
+          }}}
+        },
+        responses: { 200: { description: 'Virement effectué' } } 
+      }
+    },
+    '/api/transactions/deposit': {
+      post: { 
+        tags: ['Utilisateur (Client)'], 
+        summary: 'Déposer de l\'argent',
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: {
+            type: 'object',
+            properties: {
+              userId: { type: 'integer', example: 1 },
+              montant: { type: 'number', example: 5000 }
+            }
+          }}}
+        },
+        responses: { 200: { description: 'Dépôt réussi' } } 
+      }
+    },
+    '/api/transactions/withdraw': {
+      post: { 
+        tags: ['Utilisateur (Client)'], 
+        summary: 'Retirer de l\'argent',
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: {
+            type: 'object',
+            properties: {
+              userId: { type: 'integer', example: 1 },
+              montant: { type: 'number', example: 2000 }
+            }
+          }}}
+        },
+        responses: { 200: { description: 'Retrait réussi' } } 
+      }
+    },
+    '/api/account/rib/{userId}': {
+      get: { 
+        tags: ['Utilisateur (Client)'], 
+        summary: 'Télécharger RIB (PDF)', 
+        parameters: [{ in: 'path', name: 'userId', required: true, schema: { type: 'integer' }, example: 1 }],
+        responses: { 200: { description: 'OK' } } 
+      }
+    },
+    '/api/account/close': {
+      delete: { 
+        tags: ['Utilisateur (Client)'], 
+        summary: 'Clôturer le compte',
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: {
+            type: 'object',
+            properties: {
+              userId: { type: 'integer', example: 1 },
+              mot_de_passe: { type: 'string', example: 'password123' }
+            }
+          }}}
+        },
+        responses: { 200: { description: 'Compte clôturé' } } 
       }
     },
     '/api/transactions/history/{userId}': {

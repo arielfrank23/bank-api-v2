@@ -2,7 +2,7 @@ const User = require('../models/User');
 const Account = require('../models/Account');
 const Transaction = require('../models/Transaction');
 
-// 1 & 2. Statut du compte
+// 1 & 2. Gérer le statut
 exports.updateAccountStatus = async (req, res) => {
     try {
         const { userId, status } = req.body;
@@ -12,7 +12,7 @@ exports.updateAccountStatus = async (req, res) => {
     }
 };
 
-// 3. Liste des utilisateurs
+// 3. Liste de tous les utilisateurs
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({ attributes: { exclude: ['mot_de_passe'] } });
@@ -22,7 +22,7 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
-// 4. Toutes les transactions
+// 4. Voir toutes les transactions
 exports.getAllTransactions = async (req, res) => {
     try {
         const transactions = await Transaction.findAll({ order: [['createdAt', 'DESC']] });
@@ -32,7 +32,7 @@ exports.getAllTransactions = async (req, res) => {
     }
 };
 
-// 5. Ajuster solde
+// 5. Modifier le solde (Correction)
 exports.adjustBalance = async (req, res) => {
     try {
         const { userId, nouveauSolde } = req.body;
@@ -40,36 +40,36 @@ exports.adjustBalance = async (req, res) => {
         if (!account) return res.status(404).json({ error: "Compte non trouvé" });
         account.solde = nouveauSolde;
         await account.save();
-        res.json({ message: "Solde corrigé", nouveau_solde: account.solde });
+        res.json({ message: "Solde mis à jour", nouveau_solde: account.solde });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-// 6. SUPPRIMER UN UTILISATEUR (Celle qui manquait !)
+// 6. Supprimer un compte
 exports.deleteUser = async (req, res) => {
     try {
         const { userId } = req.params;
         const user = await User.findByPk(userId);
         if (!user) return res.status(404).json({ error: "Utilisateur non trouvé" });
         await user.destroy();
-        res.json({ message: "Utilisateur supprimé définitivement" });
+        res.json({ message: "Utilisateur supprimé avec succès" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-// 7. Rapports
+// 7. Rapports globaux
 exports.getGlobalReport = async (req, res) => {
-    res.json({ message: "Rapport global généré", date: new Date() });
+    res.json({ message: "Génération du rapport global...", date: new Date() });
 };
 
-// 8 & 10. Paramètres
-exports.updateSystemSettings = async (req, res) => {
-    res.json({ message: "Paramètres mis à jour" });
-};
-
-// 9. Créer Admin
+// 9. Créer admin
 exports.createAdmin = async (req, res) => {
-    res.json({ message: "Admin créé" });
+    res.json({ message: "Fonction de création d'admin prête" });
+};
+
+// 8 & 10. Paramètres (Frais/Plafonds)
+exports.updateSystemSettings = async (req, res) => {
+    res.json({ message: "Paramètres système mis à jour" });
 };

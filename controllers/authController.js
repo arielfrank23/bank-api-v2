@@ -2,7 +2,7 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// --- INSCRIPTION ---
+// CREATE : Inscription d'un utilisateur
 exports.register = async (req, res) => {
     try {
         const { nom, email, telephone, mot_de_passe } = req.body;
@@ -14,7 +14,7 @@ exports.register = async (req, res) => {
     }
 };
 
-// --- CONNEXION ---
+// READ : Connexion
 exports.login = async (req, res) => {
     try {
         const { email, mot_de_passe } = req.body;
@@ -31,15 +31,13 @@ exports.login = async (req, res) => {
     }
 };
 
-// --- MODIFIER SES INFORMATIONS (Nouvelle fonction) ---
+// UPDATE : Mise à jour du profil par l'utilisateur lui-même
 exports.updateProfile = async (req, res) => {
     try {
         const { userId, nom, email, telephone } = req.body;
-        
         const user = await User.findByPk(userId);
         if (!user) return res.status(404).json({ error: "Utilisateur non trouvé" });
 
-        // Mise à jour des champs s'ils sont fournis
         if (nom) user.nom = nom;
         if (email) user.email = email;
         if (telephone) user.telephone = telephone;
