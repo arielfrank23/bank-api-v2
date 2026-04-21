@@ -341,23 +341,17 @@ async function startServer() {
     try {
         console.log('⏳ Connexion à la base de données...');
         await sequelize.authenticate();
-        console.log('✅ Connecté à PostgreSQL sur Neon');
-
-        // AJOUTE CETTE LIGNE ICI :
-        // alter: true permet de mettre à jour les tables si tu modifies tes modèles
-        await sequelize.sync({ alter: true }); 
-        console.log('✅ Tables synchronisées avec succès');
         
-        const server = app.listen(PORT, '0.0.0.0', () => {
-            console.log(`🚀 Serveur actif sur http://localhost:${PORT}/api-docs`);
+        // Utilise sync() SANS alter ou force en production pour éviter les crashs
+        await sequelize.sync(); 
+        console.log('✅ Base de données prête');
+        
+        app.listen(PORT, '0.0.0.0', () => {
+            console.log(`🚀 Serveur actif sur port ${PORT}`);
         });
-
-        server.keepAliveTimeout = 60000; 
-
     } catch (err) {
-        console.error('❌ Erreur fatale au démarrage:', err.message);
-        process.exit(1);
+        console.error('❌ Erreur de démarrage:', err.message);
+        // Ne pas faire process.exit(1) ici permet parfois à Render de voir les logs avant de couper
+        throw err; 
     }
 }
-
-startServer();
