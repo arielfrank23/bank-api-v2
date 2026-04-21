@@ -339,9 +339,14 @@ const PORT = process.env.PORT || 3000;
 // Fonction de démarrage
 async function startServer() {
     try {
-        console.log('⏳ Synchronisation avec la base de données...');
+        console.log('⏳ Connexion à la base de données...');
         await sequelize.authenticate();
         console.log('✅ Connecté à PostgreSQL sur Neon');
+
+        // AJOUTE CETTE LIGNE ICI :
+        // alter: true permet de mettre à jour les tables si tu modifies tes modèles
+        await sequelize.sync({ alter: true }); 
+        console.log('✅ Tables synchronisées avec succès');
         
         const server = app.listen(PORT, '0.0.0.0', () => {
             console.log(`🚀 Serveur actif sur http://localhost:${PORT}/api-docs`);
