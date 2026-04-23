@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
-const User = require('./User');
 
 const Account = sequelize.define('Account', {
     id: {
@@ -8,27 +7,20 @@ const Account = sequelize.define('Account', {
         primaryKey: true,
         autoIncrement: true
     },
-    numero_compte: {
-        type: DataTypes.STRING,
-        unique: true,
-        allowNull: false
-    },
+    // ON SUPPRIME numero_compte ICI car il n'existe pas dans Neon
     solde: {
         type: DataTypes.DECIMAL(15, 2),
         defaultValue: 0.00
     },
-    user_id: {
+    userId: { // Vérifie bien si c'est userId ou user_id dans Neon
         type: DataTypes.INTEGER,
         allowNull: false,
+        field: 'userId', // Force Sequelize à utiliser le nom exact de Neon
         references: { model: 'users', key: 'id' }
     }
 }, {
     tableName: 'accounts',
-    timestamps: false // On reste sur false pour correspondre à ta structure actuelle
+    timestamps: true // Tu as des colonnes createdAt/updatedAt dans Neon, donc mets true
 });
-
-// Définir la relation
-User.hasOne(Account, { foreignKey: 'user_id' });
-Account.belongsTo(User, { foreignKey: 'user_id' });
 
 module.exports = Account;
