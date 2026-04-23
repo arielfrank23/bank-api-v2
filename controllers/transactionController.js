@@ -90,3 +90,50 @@ exports.closeAccount = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+const { Account, Transaction, User, sequelize } = require('../models');
+
+exports.effectuerVirement = async (req, res) => {
+    const { expediteurId, destinataireId, montant } = req.body;
+    const t = await sequelize.transaction(); // Début de la transaction
+
+    try {
+        // 1. Vérification du montant
+        if (montant <= 0) {
+            throw new Error("Le montant doit être supérieur à 0");
+        }
+
+        // 2. Récupération des comptes
+        const compteExp = await Account.findOne({ where: { userId: expediteurId }, transaction: t });
+        const compteDest = await Account.findOne({ where: { userId: destinataireId }, transaction: t });
+
+        if (!compteExp || !compteDest) {
+            throw new Error("L'un des comptes est introuvable");
+        }
+
+        // 3. Vérification du solde (Samuel Etoo doit avoir assez d'argent)
+        if (parseFloat(compteExp.solde) < montant) {
+            throw new Error("Solde insuffisant pour effectuer cette opération");
+        }
+
+        // 4. Débit et Crédit
+        await compteExp.update({ solde: parseFloat(compteExp.solde) - montant }, { transaction: t });
+        await compteDest.update({ solde: parseFloat(compteDest.solde) + montant }, { transaction: t });
+
+        // 5. Enregistrement de la transaction (Logique d'historique)
+        await Transaction.create({
+            expediteurId,
+            destinataireId,
+            montant,
+            type: 'VIREMENT',
+            statut: 'SUCCES'
+        }, { transaction: t });
+
+        await t.commit(); // Validation de toutes les étapes
+        res.status(200).json({ message: "Virement effectué avec succès" });
+
+    } catch (error) {
+        await t.rollback(); // Annulation de tout en cas d'erreur
+        res.status(400).json({ error: error.message });
+    }
+};
