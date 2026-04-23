@@ -18,5 +18,6 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   },
   logging: false // Pour ne pas polluer ton terminal
 });
+ssl: true
 
 module.exports = sequelize;
