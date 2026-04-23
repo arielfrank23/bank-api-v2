@@ -5,9 +5,16 @@ const sequelize = require('../config/db');
 // Consulter le solde
 exports.getBalance = async (req, res) => {
     try {
-        const account = await Account.findOne({ where: { user_id: req.params.userId } });
+        // On cherche par userId (minuscule ou majuscule selon ton modèle)
+        const account = await Account.findOne({ where: { userId: req.params.userId } });
+        
         if (!account) return res.status(404).json({ error: "Compte non trouvé" });
-        res.json({ numero_compte: account.numero_compte, solde: account.solde });
+
+        // ON NE RENVOIE QUE LE SOLDE (puisque numero_compte n'existe pas dans Neon)
+        res.json({ 
+            userId: account.userId, 
+            solde: account.solde 
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
