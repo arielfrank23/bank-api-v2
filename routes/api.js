@@ -3,6 +3,7 @@ const router = express.Router();
 const authCtrl = require('../controllers/authController');
 const transacCtrl = require('../controllers/transactionController');
 const adminCtrl = require('../controllers/adminController');
+const transactionController = require('../controllers/transactionController');
 
 // --- AUTHENTIFICATION ---
 router.post('/auth/register', authCtrl.register);
@@ -10,7 +11,7 @@ router.post('/auth/login', authCtrl.login);
 router.put('/user/update', authCtrl.updateProfile);
 
 // --- UTILISATEUR (CLIENT) ---
-router.get('/account/balance/:userId', transacCtrl.getBalance);
+router.get('/account/balance/:telephone', transactionController.getBalanceByPhone);
 router.get('/transactions/history/:userId', transacCtrl.getHistory);
 router.post('/transactions/transfer', transacCtrl.transfer);
 router.post('/transactions/deposit', transacCtrl.deposit);

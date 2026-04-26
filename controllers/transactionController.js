@@ -1,19 +1,31 @@
+const User = require('../models/User');
 const Account = require('../models/Account');
 const Transaction = require('../models/Transaction');
 const sequelize = require('../config/db');
 
-// Consulter le solde
-exports.getBalance = async (req, res) => {
+// Consulter le solde via le numéro de téléphone
+exports.getBalanceByPhone = async (req, res) => {
     try {
-        // On cherche par userId (minuscule ou majuscule selon ton modèle)
-        const account = await Account.findOne({ where: { userId: req.params.userId } });
-        
-        if (!account) return res.status(404).json({ error: "Compte non trouvé" });
+        const { telephone } = req.params;
 
-        // ON NE RENVOIE QUE LE SOLDE (puisque numero_compte n'existe pas dans Neon)
-        res.json({ 
-            userId: account.userId, 
-            solde: account.solde 
+        // 1. Trouver l'utilisateur par son téléphone
+        const user = await User.findOne({ where: { telephone } });
+        
+        if (!user) {
+            return res.status(404).json({ error: "Utilisateur non trouvé avec ce numéro" });
+        }
+
+        // 2. Trouver le compte associé à cet utilisateur
+        const account = await Account.findOne({ where: { userId: user.id } });
+
+        if (!account) {
+            return res.status(404).json({ error: "Compte bancaire non activé pour cet utilisateur" });
+        }
+
+        res.json({
+            client: user.nom,
+            telephone: user.telephone,
+            solde: account.solde
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -38,9 +50,55 @@ exports.getHistory = async (req, res) => {
     }
 };
 
-// Virement
+// Virement par numéro de téléphone
 exports.transfer = async (req, res) => {
-    res.json({ message: "Fonction de virement prête" });
+    const { telephoneExpediteur, telephoneDestinataire, montant } = req.body;
+    const t = await sequelize.transaction();
+
+    try {
+        if (montant <= 0) throw new Error("Le montant doit être supérieur à 0");
+
+        // 1. Trouver les utilisateurs par téléphone
+        const userExp = await User.findOne({ where: { telephone: telephoneExpediteur }, transaction: t });
+        const userDest = await User.findOne({ where: { telephone: telephoneDestinataire }, transaction: t });
+
+        if (!userExp || !userDest) {
+            throw new Error("Expéditeur ou destinataire introuvable");
+        }
+
+        // 2. Trouver les comptes bancaires via les IDs des utilisateurs trouvés
+        const compteExp = await Account.findOne({ where: { userId: userExp.id }, transaction: t });
+        const compteDest = await Account.findOne({ where: { userId: userDest.id }, transaction: t });
+
+        if (!compteExp || !compteDest) {
+            throw new Error("L'un des comptes bancaires n'est pas activé");
+        }
+
+        // 3. Vérifier le solde
+        if (parseFloat(compteExp.solde) < montant) {
+            throw new Error("❌ Solde insuffisant");
+        }
+
+        // 4. Exécuter le mouvement d'argent
+        await compteExp.update({ solde: parseFloat(compteExp.solde) - montant }, { transaction: t });
+        await compteDest.update({ solde: parseFloat(compteDest.solde) + montant }, { transaction: t });
+
+        // 5. Enregistrer la transaction dans l'historique
+        await Transaction.create({
+            expediteurId: userExp.id,
+            destinataireId: userDest.id,
+            montant,
+            type: 'VIREMENT',
+            statut: 'SUCCES'
+        }, { transaction: t });
+
+        await t.commit();
+        res.json({ message: "✅ Virement réussi de " + montant + " FCFA vers " + userDest.nom });
+
+    } catch (error) {
+        await t.rollback();
+        res.status(400).json({ error: error.message });
+    }
 };
 
 // Dépôt
